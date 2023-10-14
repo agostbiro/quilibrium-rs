@@ -15,7 +15,7 @@ categories = ["command-line-utilities", "cryptography::cryptocurrencies"]
 anyhow = "1.0.75"
 csv = "1.3.0"
 clap = { version = "4.4.6", features = ["derive", "env"] }
-quilibrium = { version = "0.1.0", path = "../quilibrium" }
+quilibrium = { version = "0.1.1", path = "../quilibrium" }
 serde = { version = "1.0.189", features = ["derive"] }
 tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
 tonic = "0.10.2"

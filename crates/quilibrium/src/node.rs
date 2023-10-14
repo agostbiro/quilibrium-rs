@@ -6,6 +6,7 @@ use crate::quilibrium_pb::node::node::pb::{
 };
 
 /// gRPC client for a Quilibrium node.
+#[derive(Debug, Clone)]
 pub struct NodeClient {
     client: NodeServiceClient<tonic::transport::Channel>,
 }
@@ -47,6 +48,7 @@ pub enum NodeClientError {
 }
 
 /// A network info response from a node.
+#[derive(Debug, Clone)]
 pub struct NetworkInfoResponse {
     pub network_info: Vec<NetworkInfo>,
 }
