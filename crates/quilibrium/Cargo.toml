@@ -1,0 +1,30 @@
+[package]
+name = "quilibrium"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["Agost Biro <agostbiro@gmail.com>"]
+description = "Quilibrium client library"
+readme = "README.md"
+homepage = "https://github.com/agostbiro/quilibrium-rs"
+repository = "https://github.com/agostbiro/quilibrium-rs"
+keywords = ["cli", "client", "quilibrium"]
+categories = ["command-line-utilities", "cryptography::cryptocurrencies"]
+exclude = ["protobufs/ceremonyclient/node/ceremony.json", "*.pdf"]
+# TODO figure out why out include instead of exclude doesn't work
+#include = ["src", "protobufs/ceremonyclient/node/protobufs"]
+
+[dependencies]
+libp2p-identity = { version = "0.2.5", features = ["peerid", "serde"] }
+multiaddr = "0.18.0"
+prost = "0.12.1"
+serde = { version = "1.0.189", features = ["derive"] }
+thiserror = "1.0.49"
+tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
+tonic = "0.10.2"
+
+[build-dependencies]
+tonic-build = "0.10.2"
+
+[dev-dependencies]
+tokio-test = "0.4.3"

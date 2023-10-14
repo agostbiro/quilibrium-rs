@@ -1,0 +1,3 @@
+[submodule "crates/quilibrium/protobufs/ceremonyclient"]
+	path = crates/quilibrium/protobufs/ceremonyclient
+	url = https://github.com/quilibriumnetwork/ceremonyclient
