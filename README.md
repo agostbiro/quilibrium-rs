@@ -2,7 +2,7 @@
 
 ## CLI
 
-![quiclient usage screenshot](assets/quilcient-screenshot.png)
+![quilclient usage screenshot](assets/quilclient-screenshot.png)
 
 Please see the CLI readme for install and usage instructions: [crates/quilclient/README.md](crates/quilclient/README.md)
 

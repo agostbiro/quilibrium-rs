@@ -32,7 +32,7 @@ QmcYNKu7FBUfjUvNRbj2shHXX18KC4t3PEypzkcGXu21RT,/ip4/51.81.48.32/udp/54697/quic,0
 
 You can save the output to disk and open it with a spreadsheet program or you can pipe the output to a command line CSV viewer such as [xsv:](https://github.com/BurntSushi/xsv)
 
-![quiclient usage screenshot](../../assets/quilcient-screenshot.png)
+![quilclient usage screenshot](../../assets/quilclient-screenshot.png)
 
 ## Docs
 
