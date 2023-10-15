@@ -13,6 +13,10 @@ Fetch the peers from the node's peer store and print them to stdout as CSV:
 quilclient network-info --node-uri http://1.2.3.4:5678 
 ```
 
+The node URI is the gRPC URI of the Quilibrium node. See the [Ceremony Client
+readme](https://github.com/quilibriumnetwork/ceremonyclient#experimental--grpcrest-support)
+for more on the node URI.
+
 Alternatively provide the node URI as an environment variable:
 
 ```bash
