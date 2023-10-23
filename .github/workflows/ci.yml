@@ -17,6 +17,8 @@ jobs:
       # Set up Rust
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
       
       # Cache Rust dependencies
       - name: Cache Cargo
