@@ -5,7 +5,7 @@
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Import the client
-//! use quilibrium::NodeClient;
+//! use quilibrium::node::NodeClient;
 //!
 //! // Connect to your node
 //! let mut client = NodeClient::new("http://1.2.3.4:5678".parse()?).await?;
