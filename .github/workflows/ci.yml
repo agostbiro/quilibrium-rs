@@ -11,10 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
-      - uses: actions/checkout@v2
+      # Checkout the repository and submodules
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
       
-      # Set up Rust
       - name: Set up Rust toolchain
         uses: dsherret/rust-toolchain-file@v1
       
