@@ -1,6 +1,35 @@
-use crate::node::{NetworkInfo, PeerInfo};
+use quilibrium::node::{ClockFrame, FrameFilter, NetworkInfo, PeerId, PeerInfo};
 
-use libp2p_identity::PeerId;
+pub fn clock_frames_to_rows(
+    clock_frames: impl IntoIterator<Item = ClockFrame>,
+) -> Vec<ClockFrameRow> {
+    clock_frames
+        .into_iter()
+        .map(|clock_frame| {
+            let ClockFrame {
+                filter,
+                frame_number,
+                timestamp,
+                difficulty,
+            } = clock_frame;
+
+            let filter = match filter {
+                FrameFilter::CeremonyApplication => "ceremony-application".to_string(),
+                FrameFilter::MasterClock => "master-clock".to_string(),
+                FrameFilter::Unknown(filter) => format!("unknown-{}", hex::encode(filter)),
+            };
+
+            let timestamp = timestamp.to_string();
+
+            ClockFrameRow {
+                filter,
+                frame_number,
+                timestamp,
+                difficulty,
+            }
+        })
+        .collect()
+}
 
 /// Flatten peer info into a list of peer info rows where each row has a single multiaddr.
 pub fn peer_infos_to_rows(peer_infos: impl IntoIterator<Item = PeerInfo>) -> Vec<PeerInfoRow> {
@@ -40,6 +69,16 @@ pub fn network_infos_to_rows(
             })
         })
         .collect()
+}
+
+/// Clock frame where the filter and the timestamp are human readable strings.
+/// Useful for CSV output.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ClockFrameRow {
+    pub filter: String,
+    pub frame_number: u64,
+    pub timestamp: String,
+    pub difficulty: u32,
 }
 
 /// Network info where instead of a list of multiaddrs, we have a single multiaddr.

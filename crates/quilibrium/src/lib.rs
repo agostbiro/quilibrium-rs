@@ -40,7 +40,4 @@ mod quilibrium_pb {
     }
 }
 
-pub mod csv;
-mod node;
-
-pub use node::{NodeClient, NodeClientError, PeerInfo};
+pub mod node;
