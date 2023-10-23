@@ -14,12 +14,9 @@ jobs:
       # Checkout the repository
       - uses: actions/checkout@v2
       
-      # Setup Rust
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
+      # Set up Rust
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
       
       # Cache Rust dependencies
       - name: Cache Cargo
