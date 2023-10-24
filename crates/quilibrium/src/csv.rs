@@ -1,3 +1,6 @@
+// This module will be private in the next version.
+#![allow(missing_docs)]
+
 use crate::node::{NetworkInfo, PeerInfo};
 
 use libp2p_identity::PeerId;
