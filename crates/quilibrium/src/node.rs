@@ -55,14 +55,18 @@ impl NodeClient {
 pub enum NodeClientError {
     #[error("Invalid frame filter")]
     InvalidFrameFilter,
+    /// The [multiaddr](https://multiformats.io/multiaddr/) is invalid.
     #[error(transparent)]
     InvalidMultiaddr(#[from] multiaddr::Error),
     #[error(transparent)]
+    /// The libp2p peer ID is invalid.
     InvalidPeerId(#[from] libp2p_identity::ParseError),
     #[error("Invalid Unix timestamp: {0}")]
     InvalidTimestamp(i64),
+    /// gRPC call error.
     #[error(transparent)]
     Status(#[from] tonic::Status),
+    /// HTTP client error.
     #[error(transparent)]
     Transport(#[from] tonic::transport::Error),
 }
@@ -295,8 +299,11 @@ impl TryFrom<node_pb::PeerInfoResponse> for PeerInfoResponse {
 /// replicated through the network mesh.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct PeerInfo {
+    /// The lip2p peer ID of the peer.
     pub peer_id: PeerId,
+    /// The [multiaddrs](https://multiformats.io/multiaddr/) of the peer.
     pub multiaddrs: Vec<multiaddr::Multiaddr>,
+    /// The maximum ceremony frame number reported by the peer.
     pub max_frame: u64,
 }
 
