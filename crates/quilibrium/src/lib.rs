@@ -1,3 +1,5 @@
+#![warn(missing_docs)]
+
 //! Quilibrium client library.
 //!
 //! Example usage:
