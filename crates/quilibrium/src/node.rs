@@ -1,3 +1,19 @@
+//! gRPC client for a Quilibrium node.
+//!
+//! Example usage:
+//! ```rust,no_run
+//! # #[tokio::main]
+//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! // Import the client
+//! use quilibrium::node::NodeClient;
+//!
+//! // Connect to your node
+//! let mut client = NodeClient::new("http://1.2.3.4:5678".parse()?).await?;
+//! // Fetch the peers from the node's peer store
+//! let network_info = client.network_info().await?;
+//! # Ok(())
+//! # }
+
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
 use lazy_static::lazy_static;
 pub use libp2p_identity::PeerId;
@@ -26,6 +42,7 @@ impl NodeClient {
         Ok(Self { client })
     }
 
+    /// Get frame metadata for a frame filter.
     pub async fn frames(
         &mut self,
         options: FramesOptions,
@@ -53,6 +70,7 @@ impl NodeClient {
 /// Errors that can occur when interacting with a node.
 #[derive(Debug, thiserror::Error)]
 pub enum NodeClientError {
+    /// Invalid frame filter.
     #[error("Invalid frame filter")]
     InvalidFrameFilter,
     /// The [multiaddr](https://multiformats.io/multiaddr/) is invalid.
@@ -61,6 +79,7 @@ pub enum NodeClientError {
     #[error(transparent)]
     /// The libp2p peer ID is invalid.
     InvalidPeerId(#[from] libp2p_identity::ParseError),
+    /// Invalid Unix timestamp.
     #[error("Invalid Unix timestamp: {0}")]
     InvalidTimestamp(i64),
     /// gRPC call error.
@@ -71,10 +90,15 @@ pub enum NodeClientError {
     Transport(#[from] tonic::transport::Error),
 }
 
+/// Options for a get frames request.
 pub struct FramesOptions {
+    /// The frame filter.
     pub filter: FrameFilter,
+    /// The frame number to start from.
     pub from_frame_number: u64,
+    /// The frame number to end at.
     pub to_frame_number: u64,
+    /// Whether to include candidate frames.
     pub include_candidates: bool,
 }
 
@@ -90,25 +114,30 @@ impl Default for FramesOptions {
 }
 
 impl FramesOptions {
+    /// Create a new frames options builder.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Set the frame filter.
     pub fn filter(mut self, filter: FrameFilter) -> Self {
         self.filter = filter;
         self
     }
 
+    /// Set the frame number to start from.
     pub fn from_frame_number(mut self, from_frame_number: u64) -> Self {
         self.from_frame_number = from_frame_number;
         self
     }
 
+    /// Set the frame number to end at.
     pub fn to_frame_number(mut self, to_frame_number: u64) -> Self {
         self.to_frame_number = to_frame_number;
         self
     }
 
+    /// Set whether to include candidate frames.
     pub fn include_candidates(mut self, include_candidates: bool) -> Self {
         self.include_candidates = include_candidates;
         self
@@ -118,6 +147,7 @@ impl FramesOptions {
 /// A get frames response from a node.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct FramesResponse {
+    /// The clock frames in the response.
     pub truncated_clock_frames: Vec<ClockFrame>,
 }
 
@@ -146,12 +176,17 @@ impl From<FramesOptions> for node_pb::GetFramesRequest {
     }
 }
 
+/// A Quilibrium clock frame.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ClockFrame {
+    /// The frame filter.
     pub filter: FrameFilter,
+    /// The frame number.
     pub frame_number: u64,
+    /// The timestamp of the frame.
     #[serde(with = "chrono::serde::ts_milliseconds")]
     pub timestamp: DateTime<Utc>,
+    /// The difficulty of the frame.
     pub difficulty: u32,
 }
 
@@ -190,10 +225,14 @@ lazy_static! {
             .expect("FRAME_FILTER_BYTES long");
 }
 
+/// A frame filter for Quilibrium clock frames.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum FrameFilter {
+    /// The ceremony application frame filter: "34001BE7432C2E6669ADA0279788682AB9F62671B1B538AB99504694D981CBD3"
     CeremonyApplication,
+    /// The master clock frame filter: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
     MasterClock,
+    /// An unknown frame filter.
     Unknown([u8; FRAME_FILTER_BYTES]),
 }
 
@@ -226,6 +265,7 @@ impl From<FrameFilter> for Vec<u8> {
 /// A network info response from a node.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct NetworkInfoResponse {
+    /// The network info data.
     pub network_info: Vec<NetworkInfo>,
 }
 
@@ -246,8 +286,11 @@ impl TryFrom<node_pb::NetworkInfoResponse> for NetworkInfoResponse {
 /// Info about a peer from the node's peer store.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct NetworkInfo {
+    /// The lip2p peer ID of the peer.
     pub peer_id: PeerId,
+    /// The [multiaddrs](https://multiformats.io/multiaddr/) of the peer.
     pub multiaddrs: Vec<multiaddr::Multiaddr>,
+    /// The peer score by the node.
     pub peer_score: f64,
 }
 
