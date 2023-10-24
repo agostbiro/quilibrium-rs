@@ -11,20 +11,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository and submodules
-      - uses: actions/checkout@v4
+      - name: Check out the repository and submodules
+        uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
       
+      # This is a separate step from caching dependencies to avoid invalidating the toolchain cache when dependencies
+      # change.
+      - name: Cache Rust toolchain
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.rustup
+          key: ${{ runner.os }}-rustup-${{ hashFiles('**/rust-toolchain.toml') }}
+      
       - name: Set up Rust toolchain
         uses: dsherret/rust-toolchain-file@v1
-      
-      # Cache Rust dependencies
-      - name: Cache Cargo
-        uses: actions/cache@v2
+        
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
@@ -32,6 +40,5 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       
-      # Run the CI checks
-      - name: CI checks
+      - name: Run CI checks
         run: ./ci.sh
