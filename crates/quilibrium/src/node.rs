@@ -94,9 +94,9 @@ pub enum NodeClientError {
 pub struct FramesOptions {
     /// The frame filter.
     pub filter: FrameFilter,
-    /// The frame number to start from.
+    /// The frame number to start from, inclusive.
     pub from_frame_number: u64,
-    /// The frame number to end at.
+    /// The frame number to end at, exclusive.
     pub to_frame_number: u64,
     /// Whether to include candidate frames.
     pub include_candidates: bool,

@@ -35,13 +35,17 @@ struct GlobalOpts {
 #[derive(Debug, Subcommand)]
 enum Command {
     Frames {
+        /// The frame filter.
         #[arg(long, short)]
         #[clap(value_enum, default_value_t=FrameFilterOpt::CeremonyApplication)]
         filter: FrameFilterOpt,
-        #[arg(long, default_value = "0")]
+        /// The frame number to fetch from, inclusive.
+        #[arg(long, short('s'), default_value = "1")]
         from_frame_number: u64,
-        #[arg(long, short, default_value = "1")]
+        /// The frame number to fetch up to, exclusive.
+        #[arg(long, short, default_value = "11")]
         to_frame_number: u64,
+        /// Whether to include candidates.
         #[arg(long, short)]
         include_candidates: bool,
     },
