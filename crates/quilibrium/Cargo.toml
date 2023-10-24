@@ -15,6 +15,9 @@ exclude = ["protobufs/ceremonyclient/node/ceremony.json", "*.pdf"]
 #include = ["src", "protobufs/ceremonyclient/node/protobufs"]
 
 [dependencies]
+chrono = { version = "0.4.31", features = ["serde"] }
+hex = "0.4.3"
+lazy_static = "1.4.0"
 libp2p-identity = { version = "0.2.5", features = ["peerid", "serde"] }
 multiaddr = "0.18.0"
 prost = "0.12.1"

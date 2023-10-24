@@ -7,7 +7,7 @@
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Import the client
-//! use quilibrium::NodeClient;
+//! use quilibrium::node::NodeClient;
 //!
 //! // Connect to your node
 //! let mut client = NodeClient::new("http://1.2.3.4:5678".parse()?).await?;
@@ -42,7 +42,4 @@ mod quilibrium_pb {
     }
 }
 
-pub mod csv;
-mod node;
-
-pub use node::{NodeClient, NodeClientError, PeerInfo};
+pub mod node;
