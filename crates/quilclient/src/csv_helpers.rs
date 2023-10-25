@@ -1,4 +1,4 @@
-use quilibrium::node::{ClockFrame, FrameFilter, NetworkInfo, PeerId, PeerInfo};
+use quilibrium::node::{ClockFrame, NetworkInfo, PeerId, PeerInfo};
 
 pub fn clock_frames_to_rows(
     clock_frames: impl IntoIterator<Item = ClockFrame>,
@@ -13,18 +13,10 @@ pub fn clock_frames_to_rows(
                 difficulty,
             } = clock_frame;
 
-            let filter = match filter {
-                FrameFilter::CeremonyApplication => "ceremony-application".to_string(),
-                FrameFilter::MasterClock => "master-clock".to_string(),
-                FrameFilter::Unknown(filter) => format!("unknown-{}", hex::encode(filter)),
-            };
-
-            let timestamp = timestamp.to_string();
-
             ClockFrameRow {
-                filter,
+                filter: filter.to_string(),
                 frame_number,
-                timestamp,
+                timestamp: timestamp.to_string(),
                 difficulty,
             }
         })
