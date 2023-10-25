@@ -17,8 +17,10 @@
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
 use lazy_static::lazy_static;
 pub use libp2p_identity::PeerId;
+use std::fmt::Display;
 use tonic::transport::Uri;
 
+use crate::quilibrium_pb::node::node::pb::GetFrameInfoRequest;
 use crate::quilibrium_pb::node::{
     clock::pb::{self as clock_pb},
     node::pb::{self as node_pb, node_service_client::NodeServiceClient},
@@ -50,6 +52,21 @@ impl NodeClient {
         let request = tonic::Request::new(options.into());
         let response = self.client.get_frames(request).await?;
         response.into_inner().try_into()
+    }
+
+    /// Get a frame by frame filter and frame number.
+    pub async fn frame_info(
+        &mut self,
+        filter: FrameFilter,
+        frame_number: u64,
+    ) -> Result<Option<clock_pb::ClockFrame>, NodeClientError> {
+        let request = tonic::Request::new(GetFrameInfoRequest {
+            filter: filter.into(),
+            frame_number,
+            selector: vec![],
+        });
+        let response = self.client.get_frame_info(request).await?;
+        Ok(response.into_inner().clock_frame)
     }
 
     /// Fetch the peers from the node's peer store.
@@ -176,17 +193,25 @@ impl From<FramesOptions> for node_pb::GetFramesRequest {
     }
 }
 
-/// A Quilibrium clock frame.
+/// Represents a clock frame for a given filter. Clock frames are the primary
+/// sequencing mechanism upon which the network derives consensus. As the master
+/// pulse clock, this provides deterministic but random leader election. At the
+/// data pulse clock level, this provides the same, within a quorum for data
+/// sequencers.
+/// Docs from: https://github.com/QuilibriumNetwork/ceremonyclient/blob/20aae290cb2f67b4557bd3aa245193f4a4992583/node/protobufs/clock.proto
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ClockFrame {
-    /// The frame filter.
+    /// The filter is used as a domain separator for the input.
     pub filter: FrameFilter,
-    /// The frame number.
+    /// A strictly monotonically-increasing frame number. Used for culling old
+    /// frames past a configurable cutoff point.
     pub frame_number: u64,
-    /// The timestamp of the frame.
+    /// The self-reported timestamp from the proof publisher, encoded as an int64
+    /// of the Unix epoch in milliseconds.
     #[serde(with = "chrono::serde::ts_milliseconds")]
     pub timestamp: DateTime<Utc>,
-    /// The difficulty of the frame.
+    /// The difficulty level used for the frame.
     pub difficulty: u32,
 }
 
@@ -234,6 +259,16 @@ pub enum FrameFilter {
     MasterClock,
     /// An unknown frame filter.
     Unknown([u8; FRAME_FILTER_BYTES]),
+}
+
+impl Display for FrameFilter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            FrameFilter::CeremonyApplication => write!(f, "ceremony-application"),
+            FrameFilter::MasterClock => write!(f, "master-clock"),
+            FrameFilter::Unknown(filter) => write!(f, "unknown-{}", hex::encode(filter)),
+        }
+    }
 }
 
 impl TryFrom<Vec<u8>> for FrameFilter {

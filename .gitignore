@@ -17,3 +17,6 @@ target/
 
 # CLI Output
 *.csv
+
+# Downloaded clock frames
+/frame-*.pb

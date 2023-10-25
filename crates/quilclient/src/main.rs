@@ -3,6 +3,7 @@ mod csv_helpers;
 use anyhow::Result;
 use clap::error::ErrorKind;
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
+use prost::Message;
 use serde::Serialize;
 use tonic::transport::Uri;
 
@@ -27,13 +28,27 @@ struct GlobalOpts {
     /// The gRPC URI of the Quilibrium node, e.g. <http://1.2.3.4:5678>.
     /// See the Ceremony Client readme for more:
     /// <https://github.com/quilibriumnetwork/ceremonyclient#experimental--grpcrest-support>
-    #[clap(long, short, global = true, env = QUILCLIENT_NODE_URI)]
+    #[clap(long, short('u'), global = true, env = QUILCLIENT_NODE_URI)]
     node_uri: Option<Uri>,
 }
 
 /// Quilibrium CLI client commands.
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// Download a frame as a protobuffer and save it to disk.
+    DownloadFrame {
+        /// The frame filter.
+        #[arg(long, short)]
+        #[clap(value_enum, default_value_t=FrameFilterOpt::CeremonyApplication)]
+        filter: FrameFilterOpt,
+        /// The frame number to fetch from, inclusive.
+        #[arg(long, short('n'), default_value = "1")]
+        frame_number: u64,
+        /// The path to write the frame to. Defaults to `./frame-<filter>-<frame_number>.pb`.
+        #[arg(long, short)]
+        out_file_path: Option<String>,
+    },
+    /// Fetch frame metadata from the node and print it to stdout as CSV.
     Frames {
         /// The frame filter.
         #[arg(long, short)]
@@ -97,6 +112,30 @@ async fn main() -> Result<()> {
     let mut client = NodeClient::new(node_uri).await?;
 
     match args.command {
+        Command::DownloadFrame {
+            filter,
+            frame_number,
+            out_file_path,
+        } => {
+            let frame_filter: FrameFilter = filter.into();
+            match client
+                .frame_info(frame_filter.clone(), frame_number)
+                .await?
+            {
+                None => {
+                    anyhow::bail!(
+                        "Frame {} not found for frame filter {}",
+                        frame_number,
+                        frame_filter
+                    )
+                }
+                Some(frame) => {
+                    let out_file_path = out_file_path
+                        .unwrap_or_else(|| format!("./frame-{frame_filter}-{frame_number}.pb"));
+                    tokio::fs::write(out_file_path, frame.encode_to_vec()).await?;
+                }
+            }
+        }
         Command::Frames {
             filter,
             from_frame_number,

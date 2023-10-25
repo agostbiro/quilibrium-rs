@@ -19,6 +19,7 @@ clap = { version = "4.4.6", features = ["derive", "env"] }
 hex = "0.4.3"
 multiaddr = "0.18.0"
 quilibrium = { version = "0.1.1", path = "../quilibrium" }
+prost = "0.12.1"
 serde = { version = "1.0.189", features = ["derive"] }
-tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.33.0", features = ["fs", "macros", "rt-multi-thread"] }
 tonic = "0.10.2"
