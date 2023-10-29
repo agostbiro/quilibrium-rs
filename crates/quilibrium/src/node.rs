@@ -14,6 +14,7 @@
 //! # Ok(())
 //! # }
 
+use crate::oblivious_transfer_units::ObliviousTransferUnits;
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
 use lazy_static::lazy_static;
 pub use libp2p_identity::PeerId;
@@ -65,6 +66,13 @@ impl NodeClient {
         let response = self.client.get_peer_info(request).await?;
         response.into_inner().try_into()
     }
+
+    /// Fetch the token info from the node.
+    pub async fn token_info(&mut self) -> Result<TokenInfo, NodeClientError> {
+        let request = tonic::Request::new(node_pb::GetTokenInfoRequest {});
+        let response = self.client.get_token_info(request).await?;
+        response.into_inner().try_into()
+    }
 }
 
 /// Errors that can occur when interacting with a node.
@@ -82,6 +90,9 @@ pub enum NodeClientError {
     /// Invalid Unix timestamp.
     #[error("Invalid Unix timestamp: {0}")]
     InvalidTimestamp(i64),
+    /// Quil token conversion error.
+    #[error(transparent)]
+    QuilTokenError(#[from] crate::oblivious_transfer_units::QuilTokenError),
     /// gRPC call error.
     #[error(transparent)]
     Status(#[from] tonic::Status),
@@ -362,6 +373,29 @@ impl TryFrom<node_pb::PeerInfo> for PeerInfo {
                 .map(|m| m.parse())
                 .collect::<Result<_, _>>()?,
             max_frame: value.max_frame,
+        })
+    }
+}
+
+/// Token supply and balance from a node.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct TokenInfo {
+    /// The token supply from confirmed frame data.
+    pub confirmed_token_supply: ObliviousTransferUnits,
+    /// The token supply, including unconfirmed frame data.
+    pub unconfirmed_token_supply: ObliviousTransferUnits,
+    /// The tokens owned by the node's address.
+    pub owned_tokens: ObliviousTransferUnits,
+}
+
+impl TryFrom<node_pb::TokenInfoResponse> for TokenInfo {
+    type Error = NodeClientError;
+
+    fn try_from(value: node_pb::TokenInfoResponse) -> Result<Self, Self::Error> {
+        Ok(Self {
+            confirmed_token_supply: value.confirmed_token_supply.as_slice().try_into()?,
+            unconfirmed_token_supply: value.unconfirmed_token_supply.as_slice().try_into()?,
+            owned_tokens: value.owned_tokens.as_slice().try_into()?,
         })
     }
 }

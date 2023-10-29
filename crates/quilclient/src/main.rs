@@ -56,6 +56,10 @@ enum Command {
         #[clap(value_enum, default_value_t=PeerType::Cooperative)]
         peer_type: PeerType,
     },
+    /// Fetch the token balance of the node and print it to stdout in QUIL units as an integer.
+    TokenBalance,
+    /// Fetch the confirmed token supply and print it to stdout in QUIL units as an integer.
+    TokenSupply,
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -122,6 +126,15 @@ async fn main() -> Result<()> {
                 PeerType::Cooperative => write_peer_infos(peer_info.peers).await?,
                 PeerType::Uncooperative => write_peer_infos(peer_info.uncooperative_peers).await?,
             };
+        }
+        Command::TokenBalance => {
+            let token_info = client.token_info().await?;
+            dbg!(token_info.owned_tokens);
+            println!("{}", token_info.owned_tokens.quil_tokens());
+        }
+        Command::TokenSupply => {
+            let token_info = client.token_info().await?;
+            println!("{}", token_info.confirmed_token_supply.quil_tokens());
         }
     }
 
