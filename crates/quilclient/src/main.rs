@@ -168,7 +168,6 @@ async fn main() -> Result<()> {
         }
         Command::TokenBalance => {
             let token_info = client.token_info().await?;
-            dbg!(token_info.owned_tokens);
             println!("{}", token_info.owned_tokens.quil_tokens());
         }
         Command::TokenSupply => {

@@ -16,6 +16,6 @@ let mut client = NodeClient::new("http://1.2.3.4:5678".parse()?).await?;
 let network_info = client.network_info().await?;
 ```
 
-## Docs
+## [Docs](https://docs.rs/quilibrium/latest/quilibrium/)
 
-TODO
+## [Changelog](./CHANGELOG.md)
