@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Made it an error to construct
+  [ObliviousTransferUnits](https://docs.rs/quilibrium/latest/quilibrium/struct.ObliviousTransferUnits.html)
+  from a slice shorter than 32 bytes since the Quilibrium gRPC returns them as
+  32 byte vectors and passing a shorter slice is probably an error. Trying to
+  construct
+  [ObliviousTransferUnits](https://docs.rs/quilibrium/latest/quilibrium/struct.ObliviousTransferUnits.html)
+  from a longer slice was already an error.
+
+### Removed
+
 ## [0.2.0] - 2023-10-29
 
 ### Added
