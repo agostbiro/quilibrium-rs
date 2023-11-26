@@ -8,7 +8,7 @@ Please see the CLI readme for install and usage instructions: [crates/quilclient
 
 ## Client Library
 
-```rust
+```rust, no_compile
 // Import the client
 use quilibrium::NodeClient;
 
@@ -20,3 +20,7 @@ let network_info = client.network_info().await?;
 
 Please see the client library readme for install and usage instructions: [crates/quilibrium/README.md](crates/quilibrium/README.md)
 
+## Related Projects
+
+- [Quilbrium Ceremony Client](https://github.com/QuilibriumNetwork/ceremonyclient)
+- [Quilibrium Metrics for Prometheus](https://github.com/sirouk/quilibrium-node-exporter)
