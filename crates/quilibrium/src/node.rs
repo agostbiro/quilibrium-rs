@@ -107,6 +107,9 @@ pub enum NodeClientError {
     /// Invalid Unix timestamp.
     #[error("Invalid Unix timestamp: {0}")]
     InvalidTimestamp(i64),
+    /// Invalid protocol version triple.
+    #[error("Invalid protocol version triple: {0:?}")]
+    InvalidVersion(Vec<u8>),
     /// Quil token conversion error.
     #[error(transparent)]
     QuilTokenError(#[from] crate::oblivious_transfer_units::QuilTokenError),
@@ -230,17 +233,10 @@ impl TryFrom<clock_pb::ClockFrame> for ClockFrame {
     type Error = NodeClientError;
 
     fn try_from(value: clock_pb::ClockFrame) -> Result<Self, Self::Error> {
-        let timestamp = match Utc.timestamp_millis_opt(value.timestamp) {
-            LocalResult::Single(timestamp) => timestamp,
-            LocalResult::Ambiguous(_, _) => {
-                Err(NodeClientError::InvalidTimestamp(value.timestamp))?
-            }
-            LocalResult::None => Err(NodeClientError::InvalidTimestamp(value.timestamp))?,
-        };
         Ok(Self {
             filter: value.filter.try_into()?,
             frame_number: value.frame_number,
-            timestamp,
+            timestamp: convert_timestamp(value.timestamp)?,
             difficulty: value.difficulty,
         })
     }
@@ -394,6 +390,15 @@ pub struct PeerInfo {
     pub multiaddrs: Vec<multiaddr::Multiaddr>,
     /// The maximum ceremony frame number reported by the peer.
     pub max_frame: u64,
+    /// The self-reported timestamp of the peer info data.
+    #[serde(with = "chrono::serde::ts_milliseconds")]
+    pub timestamp: DateTime<Utc>,
+    /// The protocol version triple of the peer.
+    pub version: [u8; 3],
+    /// The Ed448 signature of the peer attesting to the peer info.
+    pub signature: Vec<u8>,
+    /// The Ed448 public key of the peer that was used to sign the message. Must match the peer id.
+    pub public_key: Vec<u8>,
 }
 
 impl TryFrom<node_pb::PeerInfo> for PeerInfo {
@@ -408,6 +413,13 @@ impl TryFrom<node_pb::PeerInfo> for PeerInfo {
                 .map(|m| m.parse())
                 .collect::<Result<_, _>>()?,
             max_frame: value.max_frame,
+            timestamp: convert_timestamp(value.timestamp)?,
+            version: value
+                .version
+                .try_into()
+                .map_err(NodeClientError::InvalidVersion)?,
+            signature: value.signature,
+            public_key: value.public_key,
         })
     }
 }
@@ -432,5 +444,13 @@ impl TryFrom<node_pb::TokenInfoResponse> for TokenInfo {
             unconfirmed_token_supply: value.unconfirmed_token_supply.as_slice().try_into()?,
             owned_tokens: value.owned_tokens.as_slice().try_into()?,
         })
+    }
+}
+
+fn convert_timestamp(timestamp: i64) -> Result<DateTime<Utc>, NodeClientError> {
+    match Utc.timestamp_millis_opt(timestamp) {
+        LocalResult::Single(timestamp) => Ok(timestamp),
+        LocalResult::Ambiguous(_, _) => Err(NodeClientError::InvalidTimestamp(timestamp)),
+        LocalResult::None => Err(NodeClientError::InvalidTimestamp(timestamp)),
     }
 }

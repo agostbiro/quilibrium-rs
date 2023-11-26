@@ -32,11 +32,16 @@ pub fn peer_infos_to_rows(peer_infos: impl IntoIterator<Item = PeerInfo>) -> Vec
                 peer_id,
                 multiaddrs,
                 max_frame,
+                timestamp,
+                version,
+                ..
             } = peer_info;
             multiaddrs.into_iter().map(move |multiaddr| PeerInfoRow {
                 peer_id,
                 multiaddr,
                 max_frame,
+                version: display_version(&version),
+                timestamp: timestamp.to_string(),
             })
         })
         .collect()
@@ -89,4 +94,10 @@ pub struct PeerInfoRow {
     pub peer_id: PeerId,
     pub multiaddr: multiaddr::Multiaddr,
     pub max_frame: u64,
+    pub version: String,
+    pub timestamp: String,
+}
+
+fn display_version(version: &[u8; 3]) -> String {
+    format!("{}.{}.{}", version[0], version[1], version[2])
 }
