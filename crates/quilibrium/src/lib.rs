@@ -43,6 +43,6 @@ mod quilibrium_pb {
 }
 
 pub mod node;
-mod oblivious_transfer_units;
+pub mod oblivious_transfer_units;
 
 pub use oblivious_transfer_units::ObliviousTransferUnits;
