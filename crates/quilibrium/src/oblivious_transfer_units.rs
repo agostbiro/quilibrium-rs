@@ -1,3 +1,5 @@
+//! Quilibrium token quantities.
+
 use std::ops::Div;
 
 use lazy_static::lazy_static;
@@ -42,6 +44,7 @@ impl TryFrom<&[u8]> for ObliviousTransferUnits {
 /// Errors that occur when interacting with Quilibrium token quantities.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum QuilTokenError {
+    /// The provided bytes are not valid oblivious transfer units.
     #[error("The provided bytes are not valid oblivious transfer units.")]
     InvalidBytes(Vec<u8>),
 }

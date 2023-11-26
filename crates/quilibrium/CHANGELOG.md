@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Expose [QuilTokenError](https://docs.rs/quilibrium/latest/quilibrium/enum.QuilTokenError.html) in the public interface.
+
 ### Fixed
 
 ### Changed
