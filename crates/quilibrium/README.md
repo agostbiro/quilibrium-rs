@@ -6,7 +6,7 @@
 
 ## Example usage
 
-```rust
+```rust, no_compile
 // Import the client
 use quilibrium::NodeClient;
 

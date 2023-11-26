@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Expose [QuilTokenError](https://docs.rs/quilibrium/latest/quilibrium/enum.QuilTokenError.html) in the public interface.
+- Exposed [QuilTokenError](https://docs.rs/quilibrium/latest/quilibrium/oblivious_transfer_units/enum.QuilTokenError.html) in the public interface.
+- Added `timestamp`, `version`, `public_key`, `signature` fields to [PeerInfo](https://docs.rs/quilibrium/latest/quilibrium/node/struct.PeerInfo.html).
 
 ### Fixed
 
@@ -29,9 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added [frame metadata](https://docs.rs/quilibrium/0.2.0/quilibrium/struct.NodeClient.html#method.frames) query support to `NodeClient`.
-- Added [frame info](https://docs.rs/quilibrium/0.2.0/quilibrium/struct.NodeClient.html#method.frame_info) support to `NodeClient`.
-- Added [token info](https://docs.rs/quilibrium/0.2.0/quilibrium/struct.NodeClient.html#method.token_info) support to `NodeClient`.
+- Added [frame metadata](https://docs.rs/quilibrium/0.2.0/quilibrium/node/struct.NodeClient.html#method.frames) query support to `NodeClient`.
+- Added [frame info](https://docs.rs/quilibrium/0.2.0/quilibrium/node/struct.NodeClient.html#method.frame_info) support to `NodeClient`.
+- Added [token info](https://docs.rs/quilibrium/0.2.0/quilibrium/node/struct.NodeClient.html#method.token_info) support to `NodeClient`.
 
 ### Changed
 
