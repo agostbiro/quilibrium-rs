@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `NodeClient` with [network info](https://docs.rs/quilibrium/0.1.0/quilibrium/struct.NodeClient.html#method.network_info) and [peer info](https://docs.rs/quilibrium/0.1.0/quilibrium/struct.NodeClient.html#method.peer_info) support.
 
 [unreleased]: https://github.com/agostbiro/quilibrium-rs/compare/quilibrium-0.2.0..HEAD
+[0.2.1]: https://github.com/agostbiro/quilibrium-rs/compare/quilibrium-0.2.0..quilibrium-0.2.1
 [0.2.0]: https://github.com/agostbiro/quilibrium-rs/compare/quilibrium-0.1.1..quilibrium-0.2.0
 [0.1.1]: https://github.com/agostbiro/quilibrium-rs/compare/quilibrium-0.1.0..quilibrium-0.1.1
 [0.1.0]: https://github.com/agostbiro/quilibrium-rs/compare/quilibrium-0.1.0
