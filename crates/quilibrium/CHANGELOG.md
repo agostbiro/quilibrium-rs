@@ -9,10 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Fixed
+
+### Changed
+
+### Removed
+
+## [0.2.1] - 2023-11-28
+
+### Added
+
 - Exposed [QuilTokenError](https://docs.rs/quilibrium/latest/quilibrium/oblivious_transfer_units/enum.QuilTokenError.html) in the public interface.
 - Added `timestamp`, `version`, `public_key`, `signature` fields to [PeerInfo](https://docs.rs/quilibrium/latest/quilibrium/node/struct.PeerInfo.html).
-
-### Fixed
 
 ### Changed
 
@@ -24,7 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [ObliviousTransferUnits](https://docs.rs/quilibrium/latest/quilibrium/struct.ObliviousTransferUnits.html)
   from a longer slice was already an error.
 
-### Removed
 
 ## [0.2.0] - 2023-10-29
 
