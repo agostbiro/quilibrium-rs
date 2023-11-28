@@ -40,5 +40,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added CLI support to fetch the broadcasted sync info that gets replicated through the network mesh and print it to stdout as CSV. 
 
 [unreleased]: https://github.com/agostbiro/quilibrium-rs/compare/quilclient-0.2.0..HEAD
+[0.2.1]: https://github.com/agostbiro/quilibrium-rs/compare/quilclient-0.2.0..quilclient-0.2.1
 [0.2.0]: https://github.com/agostbiro/quilibrium-rs/compare/quilclient-0.1.0..quilclient-0.2.0
 [0.1.0]: https://github.com/agostbiro/quilibrium-rs/compare/quilclient-0.1.0
