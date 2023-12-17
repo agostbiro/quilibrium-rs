@@ -2,7 +2,8 @@
 
 ## Installation
 
-`cargo add quilibrium`
+1. Install [protoc](https://grpc.io/docs/protoc-installation/) which is needed to compile the protocol buffer definitions from the [Quilibrium Ceremony Client](https://github.com/QuilibriumNetwork/ceremonyclient) repo.
+1. `cargo add quilibrium`
 
 ## Example usage
 
