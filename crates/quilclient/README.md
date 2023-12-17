@@ -3,7 +3,8 @@
 ## Installation
 
 1. Install the Rust toolchain manager if you don't have it installed already: https://rustup.rs/
-2. Install the Quilibrium CLI: `cargo install quilclient`
+1. Install [protoc](https://grpc.io/docs/protoc-installation/) which is needed to compile the protocol buffer definitions from the [Quilibrium Ceremony Client](https://github.com/QuilibriumNetwork/ceremonyclient) repo.
+1. Install the Quilibrium CLI: `cargo install quilclient`
 
 ## Example usage
 
@@ -63,6 +64,7 @@ Options:
 
 ## Troubleshooting
 
-Make sure `$HOME/.cargo/bin` is on your path.
+1. If the installation fails, make sure you have `protoc` installed and on your path (see [installation](#Installation) instructions above).
+1. If the `quilclient` command fails, make sure `$HOME/.cargo/bin` is on your path.
 
 ## [Changelog](./CHANGELOG.md)
