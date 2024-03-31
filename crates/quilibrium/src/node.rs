@@ -84,6 +84,13 @@ impl NodeClient {
         response.into_inner().try_into()
     }
 
+    /// Fetch the self-reported peer manifests that the node knows about.
+    pub async fn peer_manifests(&mut self) -> Result<PeerManifestsResponse, NodeClientError> {
+        let request = tonic::Request::new(node_pb::GetPeerManifestsRequest {});
+        let response = self.client.get_peer_manifests(request).await?;
+        response.into_inner().try_into()
+    }
+
     /// Fetch the token info from the node.
     pub async fn token_info(&mut self) -> Result<TokenInfo, NodeClientError> {
         let request = tonic::Request::new(node_pb::GetTokenInfoRequest {});
@@ -110,6 +117,9 @@ pub enum NodeClientError {
     /// Invalid protocol version triple.
     #[error("Invalid protocol version triple: {0:?}")]
     InvalidVersion(Vec<u8>),
+    /// Invalid u64 bytes.
+    #[error("Invalid u64 bytes: {0:?}")]
+    InvalidU64Bytes(Vec<u8>),
     /// Quil token conversion error.
     #[error(transparent)]
     QuilTokenError(#[from] crate::oblivious_transfer_units::QuilTokenError),
@@ -328,7 +338,7 @@ impl TryFrom<node_pb::NetworkInfoResponse> for NetworkInfoResponse {
 /// Info about a peer from the node's peer store.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct NetworkInfo {
-    /// The lip2p peer ID of the peer.
+    /// The libp2p peer ID of the peer.
     pub peer_id: PeerId,
     /// The [multiaddrs](https://multiformats.io/multiaddr/) of the peer.
     pub multiaddrs: Vec<multiaddr::Multiaddr>,
@@ -384,7 +394,7 @@ impl TryFrom<node_pb::PeerInfoResponse> for PeerInfoResponse {
 /// replicated through the network mesh.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct PeerInfo {
-    /// The lip2p peer ID of the peer.
+    /// The libp2p peer ID of the peer.
     pub peer_id: PeerId,
     /// The [multiaddrs](https://multiformats.io/multiaddr/) of the peer.
     pub multiaddrs: Vec<multiaddr::Multiaddr>,
@@ -424,6 +434,86 @@ impl TryFrom<node_pb::PeerInfo> for PeerInfo {
     }
 }
 
+/// Response for get peer manifests request.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct PeerManifestsResponse {
+    /// The peer manifests from the node.
+    pub peer_manifests: Vec<PeerManifest>,
+}
+
+impl TryFrom<node_pb::PeerManifestsResponse> for PeerManifestsResponse {
+    type Error = NodeClientError;
+
+    fn try_from(value: node_pb::PeerManifestsResponse) -> Result<Self, Self::Error> {
+        Ok(Self {
+            peer_manifests: value
+                .peer_manifests
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::<Result<_, _>>()?,
+        })
+    }
+}
+
+/// A peer manifest from the node containing info about the self-reported capibilities of the node.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct PeerManifest {
+    /// The libp2p peer ID of the peer.
+    pub peer_id: PeerId,
+    /// The difficulty the self test was conducted under.
+    pub difficulty: u32,
+    /// The resulting local time (ms) of computing the VDF test under the difficulty.
+    pub difficulty_metric: i64,
+    /// The resulting local time (ms) of computing a KZG commitment for a 16 degree polynomial.
+    pub commit_16_metric: i64,
+    /// The resulting local time (ms) of computing a KZG commitment for a 128 degree polynomial.
+    pub commit_128_metric: i64,
+    /// The resulting local time (ms) of computing a KZG commitment for a 1024 degree polynomial.
+    pub commit_1024_metric: i64,
+    /// The resulting local time (ms) of computing a KZG commitment for a 65536 degree polynomial.
+    pub commit_65536_metric: i64,
+    /// The resulting local time (ms) of computing a KZG proof for a 16 degree polynomial.
+    pub proof_16_metric: i64,
+    /// The resulting local time (ms) of computing a KZG proof for a 128 degree polynomial.
+    pub proof_128_metric: i64,
+    /// The resulting local time (ms) of computing a KZG proof for a 1024 degree polynomial.
+    pub proof_1024_metric: i64,
+    /// The resulting local time (ms) of computing a KZG proof for a 65536 degree polynomial.
+    pub proof_65536_metric: i64,
+    /// The number of reported accessible logical cores.
+    pub cores: u32,
+    /// The total available memory in bytes.
+    pub memory: u64,
+    /// The total available storage in bytes.
+    pub storage: u64,
+    /// The highest master frame the node has.
+    pub master_head_frame: u64,
+}
+
+impl TryFrom<node_pb::PeerManifest> for PeerManifest {
+    type Error = NodeClientError;
+
+    fn try_from(value: node_pb::PeerManifest) -> Result<Self, Self::Error> {
+        Ok(Self {
+            peer_id: PeerId::from_bytes(&value.peer_id)?,
+            difficulty: value.difficulty,
+            difficulty_metric: value.difficulty_metric,
+            commit_16_metric: value.commit_16_metric,
+            commit_128_metric: value.commit_128_metric,
+            commit_1024_metric: value.commit_1024_metric,
+            commit_65536_metric: value.commit_65536_metric,
+            proof_16_metric: value.proof_16_metric,
+            proof_128_metric: value.proof_128_metric,
+            proof_1024_metric: value.proof_1024_metric,
+            proof_65536_metric: value.proof_65536_metric,
+            cores: value.cores,
+            memory: u64_from_unpadded_be_bytes(value.memory)?,
+            storage: u64_from_unpadded_be_bytes(value.storage)?,
+            master_head_frame: value.master_head_frame,
+        })
+    }
+}
+
 /// Token supply and balance from a node.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct TokenInfo {
@@ -452,5 +542,81 @@ fn convert_timestamp(timestamp: i64) -> Result<DateTime<Utc>, NodeClientError> {
         LocalResult::Single(timestamp) => Ok(timestamp),
         LocalResult::Ambiguous(_, _) => Err(NodeClientError::InvalidTimestamp(timestamp)),
         LocalResult::None => Err(NodeClientError::InvalidTimestamp(timestamp)),
+    }
+}
+
+fn u64_from_unpadded_be_bytes(bytes: Vec<u8>) -> Result<u64, NodeClientError> {
+    const U64_BYTES: usize = std::mem::size_of::<u64>();
+
+    if bytes.len() > U64_BYTES {
+        return Err(NodeClientError::InvalidU64Bytes(bytes));
+    }
+
+    let mut padded = [0; U64_BYTES];
+    padded[U64_BYTES - bytes.len()..].copy_from_slice(&bytes);
+
+    Ok(u64::from_be_bytes(padded))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_u64_from_unpadded_be_bytes() -> Result<(), NodeClientError> {
+        // u8
+        assert_eq!(u64_from_unpadded_be_bytes(0_u8.to_be_bytes().to_vec())?, 0);
+        assert_eq!(u64_from_unpadded_be_bytes(1_u8.to_be_bytes().to_vec())?, 1);
+        assert_eq!(
+            u64_from_unpadded_be_bytes((u8::MAX - 1).to_be_bytes().to_vec())?,
+            (u8::MAX - 1) as u64
+        );
+        assert_eq!(
+            u64_from_unpadded_be_bytes(u8::MAX.to_be_bytes().to_vec())?,
+            u8::MAX as u64
+        );
+        assert_eq!(
+            u64_from_unpadded_be_bytes((u8::MAX as u16 + 1).to_be_bytes().to_vec())?,
+            (u8::MAX as u16 + 1) as u64
+        );
+
+        // u16
+        assert_eq!(
+            u64_from_unpadded_be_bytes((u16::MAX - 1).to_be_bytes().to_vec())?,
+            (u16::MAX - 1) as u64
+        );
+        assert_eq!(
+            u64_from_unpadded_be_bytes(u16::MAX.to_be_bytes().to_vec())?,
+            u16::MAX as u64
+        );
+        assert_eq!(
+            u64_from_unpadded_be_bytes((u16::MAX as u32 + 1).to_be_bytes().to_vec())?,
+            (u16::MAX as u32 + 1) as u64
+        );
+
+        // u32
+        assert_eq!(
+            u64_from_unpadded_be_bytes((u32::MAX - 1).to_be_bytes().to_vec())?,
+            (u32::MAX - 1) as u64
+        );
+        assert_eq!(
+            u64_from_unpadded_be_bytes(u32::MAX.to_be_bytes().to_vec())?,
+            u32::MAX as u64
+        );
+        assert_eq!(
+            u64_from_unpadded_be_bytes((u32::MAX as u64 + 1).to_be_bytes().to_vec())?,
+            u32::MAX as u64 + 1
+        );
+
+        // u64
+        assert_eq!(
+            u64_from_unpadded_be_bytes((u64::MAX - 1).to_be_bytes().to_vec())?,
+            u64::MAX - 1
+        );
+        assert_eq!(
+            u64_from_unpadded_be_bytes(u64::MAX.to_be_bytes().to_vec())?,
+            u64::MAX
+        );
+        Ok(())
     }
 }
